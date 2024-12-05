@@ -1,0 +1,41 @@
+services:
+  nginx:
+    # run with:
+    # ./run.sh to not have to run as root (caps aren't working with docker compose...)
+    build:
+      context: ./docker/nginx
+      args:
+        HOSTNAME: nginx.localhost
+    ports:
+      - "43580:80"
+      - "43543:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/sites-enabled:/etc/nginx/sites-enabled
+      - ./docker/nginx/suricata/etc:/etc/suricata
+      - ./docker/nginx/suricata/local.rules:/var/lib/suricata/rules/local.rules
+      - ./docker/nginx/start.sh:/start.sh
+      - ./logs/suricata:/var/log/suricata
+      - ./logs/nginx:/var/log/nginx
+      - ./app:/usr/share/nginx/html
+    environment:
+      - NGINX_HOST=nginx.localhost
+      - NGINX_PORT=80
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_NICE
+    command:
+      - /start.sh
+  evebox:
+    image: jasonish/evebox:latest
+    profiles:
+      - evebox
+    environment:
+      - name=value
+    ports:
+      - "43536:5636"
+    volumes:
+      - ./logs/suricata:/var/log/suricata
+    command: evebox server --sqlite /var/log/suricata/eve.json
