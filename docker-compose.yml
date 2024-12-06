@@ -30,8 +30,6 @@ services:
       - /start.sh
   evebox:
     image: jasonish/evebox:latest
-    profiles:
-      - evebox
     environment:
       - name=value
     ports:
